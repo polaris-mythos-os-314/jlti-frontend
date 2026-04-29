@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JLTI — Matrice Géopolitique + Rapport</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0e1c;--s1:#0f1428;--s2:#151c35;--border:rgba(200,169,110,0.15);--gold:#c8a96e;--cyan:#3dd6f5;--green:#1D9E75;--red:#e24b4a;--muted:#5f6c84;--text:#e8e4de}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;padding:1.25rem;min-height:100vh}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:.5px solid var(--border)}
+  .logo{font-size:12px;letter-spacing:.12em;color:var(--gold);font-weight:500}
+  .live{font-size:11px;color:var(--green);display:flex;align-items:center;gap:5px}
+  .live::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .pipeline{display:flex;align-items:center;margin-bottom:1.5rem;overflow-x:auto;padding-bottom:4px}
+  .pipe-node{background:var(--s1);border:.5px solid var(--border);border-radius:8px;padding:10px 14px;min-width:110px;text-align:center;flex-shrink:0;cursor:pointer;transition:border-color .2s}
+  .pipe-node:hover,.pipe-node.active{border-color:var(--gold)}
+  .pn-icon{font-size:18px;margin-bottom:4px}
+  .pn-label{font-size:10px;color:var(--muted);letter-spacing:.04em}
+  .pn-val{font-size:13px;font-weight:500;margin-top:2px}
+  .pipe-arrow{color:var(--gold);font-size:14px;padding:0 4px;flex-shrink:0;opacity:.5}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+  .card{background:var(--s1);border:.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:0}
+  .card-title{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  .badge{font-size:10px;padding:2px 7px;border-radius:4px}
+  .badge-warn{background:rgba(224,159,39,.15);color:#E09F27}
+  .badge-ok{background:rgba(29,158,117,.15);color:var(--green)}
+  .badge-alert{background:rgba(226,75,74,.15);color:var(--red)}
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:10px;color:var(--muted);font-weight:400;text-align:left;padding:4px 6px;border-bottom:.5px solid var(--border)}
+  .tbl td{padding:6px;border-bottom:.5px solid rgba(255,255,255,.03);font-variant-numeric:tabular-nums}
+  .tbl tr:last-child td{border:none}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+  .tbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .tbar-label{font-size:11px;color:var(--muted);width:90px;flex-shrink:0}
+  .tbar-track{flex:1;height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
+  .tbar-fill{height:100%;border-radius:3px;transition:width 1s ease}
+  .tbar-val{font-size:11px;width:32px;text-align:right;font-variant-numeric:tabular-nums}
+  .omega-score{font-size:36px;font-weight:300;color:var(--cyan);line-height:1}
+  .omega-sub{font-size:11px;color:var(--muted);margin-top:4px}
+  .omega-track{height:4px;background:var(--s2);border-radius:2px;margin:10px 0 8px;overflow:hidden}
+  .omega-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--cyan));transition:width .8s ease}
+  .conflict-list{display:flex;flex-direction:column;gap:6px}
+  .conflict-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--s2);border-radius:6px;border-left:2px solid transparent}
+  .conflict-item.high{border-left-color:var(--red)}
+  .conflict-item.med{border-left-color:#E09F27}
+  .ci-flag{font-size:16px}.ci-info{flex:1}
+  .ci-name{font-size:12px;font-weight:500}.ci-sub{font-size:10px;color:var(--muted)}
+  .ci-score{font-size:12px;font-variant-numeric:tabular-nums}
+  .feed{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto}
+  .feed::-webkit-scrollbar{width:3px}
+  .feed::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  .feed-item{padding:7px 10px;background:var(--s2);border-radius:6px;border-left:2px solid var(--muted)}
+  .feed-item.new{border-left-color:var(--cyan);animation:flash .5s ease}
+  @keyframes flash{0%{background:rgba(61,214,245,.08)}100%{background:var(--s2)}}
+  .fi-head{display:flex;justify-content:space-between;margin-bottom:2px}
+  .fi-type,.fi-time{font-size:10px;color:var(--muted)}
+  .fi-text{font-size:11px;line-height:1.4}
+  .btn-rapport{background:var(--s1);border:.5px solid rgba(200,169,110,.4);color:var(--gold);font-size:12px;padding:10px 20px;border-radius:8px;cursor:pointer;letter-spacing:.06em;transition:all .2s;margin-top:10px;width:100%}
+  .btn-rapport:hover{border-color:var(--gold);background:var(--s2)}
+  @media(max-width:600px){.grid2,.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">JLTI · MATRICE GÉOPOLITIQUE</span>
+  <span class="live" id="clock">Simulation active</span>
+</header>
+
+<div class="pipeline">
+  <div class="pipe-node active"><div class="pn-icon">⛏️</div><div class="pn-label">Matières 1ères</div><div class="pn-val">12 actifs</div></div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-node"><div class="pn-icon">💱</div><div class="pn-label">Devise</div><div class="pn-val">USD/EUR</div></div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-node"><div class="pn-icon">⚡</div><div class="pn-label">Énergie</div><div class="pn-val" id="pn-energy">82.4 $/b</div></div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-node"><div class="pn-icon">🏛️</div><div class="pn-label">Décisions pol.</div><div class="pn-val" id="pn-pol">3 actives</div></div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-node"><div class="pn-icon">⚔️</div><div class="pn-label">Conflits</div><div class="pn-val">4 zones</div></div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-node"><div class="pn-icon">🎯</div><div class="pn-label">Qui tire ?</div><div class="pn-val" style="color:var(--gold)">Verdict ↓</div></div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-title">Matières premières <span class="badge badge-warn">Mock</span></div>
+    <table class="tbl">
+      <thead><tr><th>Actif</th><th>Prix</th><th>Devise</th><th>Var</th></tr></thead>
+      <tbody>
+        <tr><td><span class="dot" style="background:#f0c040"></span>Or</td><td id="c-gold">2 350</td><td>USD/oz</td><td id="d-gold" style="color:var(--green)">+1.05%</td></tr>
+        <tr><td><span class="dot" style="background:#c0c0c0"></span>Pétrole WTI</td><td id="c-oil">82.4</td><td>USD/b</td><td id="d-oil" style="color:var(--red)">-0.32%</td></tr>
+        <tr><td><span class="dot" style="background:#b87333"></span>Cuivre</td><td id="c-cu">9 842</td><td>USD/t</td><td id="d-cu" style="color:var(--green)">+0.78%</td></tr>
+        <tr><td><span class="dot" style="background:#e5e4e2"></span>Lithium</td><td id="c-li">14 200</td><td>USD/t</td><td id="d-li" style="color:var(--red)">-2.1%</td></tr>
+        <tr><td><span class="dot" style="background:#3dd6f5"></span>Silicium</td><td id="c-si">3 180</td><td>USD/t</td><td id="d-si" style="color:var(--green)">+0.44%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-title">Index de tension <span class="badge badge-alert">Élevé</span></div>
+    <div class="tbar-row"><span class="tbar-label">Moyen-Orient</span><div class="tbar-track"><div class="tbar-fill" id="tb-me" style="width:78%;background:var(--red)"></div></div><span class="tbar-val" id="tv-me" style="color:var(--red)">78</span></div>
+    <div class="tbar-row"><span class="tbar-label">Europe Est</span><div class="tbar-track"><div class="tbar-fill" id="tb-ee" style="width:65%;background:#E09F27"></div></div><span class="tbar-val" id="tv-ee" style="color:#E09F27">65</span></div>
+    <div class="tbar-row"><span class="tbar-label">Asie Pacifique</span><div class="tbar-track"><div class="tbar-fill" id="tb-ap" style="width:52%;background:#E09F27"></div></div><span class="tbar-val" id="tv-ap" style="color:#E09F27">52</span></div>
+    <div class="tbar-row"><span class="tbar-label">Afrique Sahel</span><div class="tbar-track"><div class="tbar-fill" id="tb-sa" style="width:71%;background:var(--red)"></div></div><span class="tbar-val" id="tv-sa" style="color:var(--red)">71</span></div>
+    <div class="tbar-row"><span class="tbar-label">Amérique Lat.</span><div class="tbar-track"><div class="tbar-fill" id="tb-al" style="width:34%;background:var(--green)"></div></div><span class="tbar-val" id="tv-al" style="color:var(--green)">34</span></div>
+  </div>
+</div>
+
+<div class="grid3">
+  <div class="card">
+    <div class="card-title">Omega Score · JLTI</div>
+    <div class="omega-score" id="omega-val">—</div>
+    <div class="omega-sub">/ 200 pts · 5 dimensions</div>
+    <div class="omega-track"><div class="omega-fill" id="omega-fill" style="width:0%"></div></div>
+    <div style="display:flex;flex-direction:column;gap:4px" id="omega-dims"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Conflits actifs</div>
+    <div class="conflict-list">
+      <div class="conflict-item high"><span class="ci-flag">🇵🇸</span><div class="ci-info"><div class="ci-name">Gaza · Liban</div><div class="ci-sub">Pétrole · Gaz</div></div><span class="ci-score" style="color:var(--red)" id="cf-1">87</span></div>
+      <div class="conflict-item high"><span class="ci-flag">🇺🇦</span><div class="ci-info"><div class="ci-name">Ukraine · Russie</div><div class="ci-sub">Blé · Gaz · Acier</div></div><span class="ci-score" style="color:var(--red)" id="cf-2">81</span></div>
+      <div class="conflict-item med"><span class="ci-flag">🇹🇼</span><div class="ci-info"><div class="ci-name">Détroit Taiwan</div><div class="ci-sub">Silicium · Semi-cond.</div></div><span class="ci-score" style="color:#E09F27" id="cf-3">64</span></div>
+      <div class="conflict-item med"><span class="ci-flag">🇲🇱</span><div class="ci-info"><div class="ci-name">Sahel · AES</div><div class="ci-sub">Or · Uranium</div></div><span class="ci-score" style="color:#E09F27" id="cf-4">58</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Flux décisions <span class="badge badge-ok">Live sim</span></div>
+    <div class="feed" id="decision-feed"></div>
+  </div>
+</div>
+
+<div class="card" style="border-color:rgba(200,169,110,.3);margin-bottom:10px">
+  <div class="card-title">🎯 Verdict — Qui tire les ficelles ?</div>
+  <div id="verdict-text" style="font-size:12px;line-height:1.7">Calcul en cours...</div>
+</div>
+
+<button class="btn-rapport" id="btn-rapport">📊 GÉNÉRER RAPPORT JLTI — Altman vs Musk</button>
+<div id="rapport-container" style="display:none;margin-top:16px"></div>
+
+<script>
+// ── MATRICE ────────────────────────────────────────────────────────────────
+const COM = [
+  {id:'gold',base:2350,amp:30, frq:.3},
+  {id:'oil', base:82.4,amp:2,  frq:.5},
+  {id:'cu',  base:9842,amp:120,frq:.2},
+  {id:'li',  base:14200,amp:400,frq:.15},
+  {id:'si',  base:3180,amp:80, frq:.4},
+];
+const prev={};COM.forEach(c=>prev[c.id]=c.base);
+
+const POOL=[
+  {type:'DOUANES', text:'USA → +25% droits acier imports asiatiques'},
+  {type:'SANCTIONS',text:'UE gel avoirs 3 entités russes secteur énergie'},
+  {type:'OPEP+',   text:'Arabie Saoudite maintient réduction 500k b/j'},
+  {type:'FED',     text:'Fed signale pause hausse taux T3 2026'},
+  {type:'DOUANES', text:'Chine contre-mesures sur semi-conducteurs US'},
+  {type:'TRAITÉ',  text:'BRICS+ accord swap Yuan/Dirham hors SWIFT'},
+  {type:'MINES',   text:'RDC suspend licences lithium 2 groupes occidentaux'},
+  {type:'EMBARGO', text:'Japon restreint exports Germanium vers Chine'},
+];
+let feed=[];
+
+const ODIMS=[
+  {id:'mom',label:'Momentum',  base:38},
+  {id:'vol',label:'Volatilité',base:32},
+  {id:'geo',label:'Géopol',    base:41},
+  {id:'jur',label:'Juridique', base:28},
+  {id:'mac',label:'Macro',     base:35},
+];
+
+function tick(){
+  const t=Date.now()/1000;
+  COM.forEach(c=>{
+    const v=c.base+c.amp*Math.sin(t*c.frq)+c.amp*.1*(Math.random()-.5);
+    const d=((v-prev[c.id])/prev[c.id]*100);
+    const col=d>=0?'var(--green)':'var(--red)';
+    const fmt=x=>x>=1000?Math.round(x).toLocaleString('fr-FR'):x.toFixed(1);
+    const el=document.getElementById('c-'+c.id),de=document.getElementById('d-'+c.id);
+    if(el)el.textContent=fmt(v);
+    if(de){de.textContent=(d>=0?'+':'')+d.toFixed(2)+'%';de.style.color=col;}
+    prev[c.id]=v;
+  });
+  document.getElementById('pn-energy').textContent=prev['oil'].toFixed(1)+' $/b';
+
+  const TZ={me:78,ee:65,ap:52,sa:71,al:34};
+  Object.entries(TZ).forEach(([k,b])=>{
+    const v=Math.min(99,Math.max(10,b+5*Math.sin(t*.1+k.charCodeAt(0))+3*Math.random()));
+    const col=v>70?'var(--red)':v>50?'#E09F27':'var(--green)';
+    const f=document.getElementById('tb-'+k),vl=document.getElementById('tv-'+k);
+    if(f){f.style.width=v.toFixed(0)+'%';f.style.background=col;}
+    if(vl){vl.textContent=v.toFixed(0);vl.style.color=col;}
+  });
+
+  [1,2,3,4].forEach(i=>{
+    const el=document.getElementById('cf-'+i);
+    if(!el)return;
+    const b=[87,81,64,58][i-1];
+    el.textContent=Math.min(99,Math.max(10,b+4*Math.sin(t*.08+i)+2*Math.random())).toFixed(0);
+  });
+
+  let tot=0;
+  const de=document.getElementById('omega-dims');
+  if(de&&!de.children.length)ODIMS.forEach(d=>{
+    const r=document.createElement('div');
+    r.style='display:flex;justify-content:space-between;font-size:10px;color:var(--muted)';
+    r.innerHTML=`<span>${d.label}</span><span id="od-${d.id}">—</span>`;
+    de.appendChild(r);
+  });
+  ODIMS.forEach(d=>{
+    const v=Math.min(40,Math.max(10,d.base+4*Math.sin(t*.12+d.base)+2*Math.random()));
+    tot+=v;
+    const el=document.getElementById('od-'+d.id);
+    if(el)el.textContent=v.toFixed(0)+' / 40';
+  });
+  tot=Math.round(Math.min(200,tot));
+  document.getElementById('omega-val').textContent=tot;
+  document.getElementById('omega-fill').style.width=(tot/200*100).toFixed(1)+'%';
+
+  const oil=prev['oil'];
+  let actor,rat,col;
+  if(oil>85){actor='🇸🇦 OPEP+ · Arabie Saoudite';rat='Le baril dépasse 85$ — la rente pétrolière dicte les marges mondiales.';col='var(--red)';}
+  else if(tot>150){actor='🇺🇸 Fed · Dollar Index';rat='Score Omega élevé — les flux de capitaux convergent vers les actifs dollar.';col='#E09F27';}
+  else{actor='🇨🇳 Yuan · Supply Chain';rat='Tension modérée — la chaîne sino-manufacturière reprend l\'avantage.';col='var(--cyan)';}
+  document.getElementById('verdict-text').innerHTML=`
+    <span style="color:${col};font-weight:500;font-size:13px">${actor}</span><br>
+    <span style="color:var(--muted)">${rat}</span>
+    <div style="margin-top:8px;font-size:10px;color:var(--muted)">Omega: ${tot}/200 · Pétrole: ${oil.toFixed(1)}$/b · ${new Date().toLocaleTimeString('fr-FR')}</div>`;
+
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR');
+}
+
+function pushDecision(){
+  const d=POOL[Math.floor(Math.random()*POOL.length)];
+  feed.unshift({...d,time:new Date().toLocaleTimeString('fr-FR')});
+  if(feed.length>8)feed.pop();
+  const f=document.getElementById('decision-feed');
+  if(!f)return;
+  f.innerHTML=feed.map((x,i)=>`
+    <div class="feed-item ${i===0?'new':''}">
+      <div class="fi-head"><span class="fi-type">${x.type}</span><span class="fi-time">${x.time}</span></div>
+      <div class="fi-text">${x.text}</div>
+    </div>`).join('');
+  document.getElementById('pn-pol').textContent=Math.floor(2+Math.random()*3)+' actives';
+}
+
+document.querySelectorAll('.pipe-node').forEach(n=>{
+  n.addEventListener('click',()=>{
+    document.querySelectorAll('.pipe-node').forEach(x=>x.classList.remove('active'));
+    n.classList.add('active');
+  });
+});
+
+pushDecision();tick();
+setInterval(tick,2000);setInterval(pushDecision,7000);
+
+// ── RAPPORT JLTI ───────────────────────────────────────────────────────────
+const OMEGA_R={
+  altman:{momentum:38,volatilite:25,geopolitique:28,juridique:18,macro:35},
+  musk:  {momentum:30,volatilite:32,geopolitique:22,juridique:15,macro:28},
+};
+
+const ETAPES=[
+  {num:1, src:'conflit',label:'Frais juridiques',          iA:45,   iM:30  },
+  {num:2, src:'conflit',label:'Guerre des talents',        iA:120,  iM:200 },
+  {num:3, src:'conflit',label:'Retards projets',           iA:300,  iM:250 },
+  {num:4, src:'conflit',label:'Coût opportunité tech',     iA:200,  iM:0   },
+  {num:5, src:'chine',  label:'Embargo sélectif MP',       iA:1200, iM:900 },
+  {num:6, src:'chine',  label:'LLM chinois valorisation',  iA:5000, iM:5000},
+  {num:7, src:'chine',  label:'Vente US Treasuries',       iA:2000, iM:2000},
+  {num:8, src:'chine',  label:'Taxe export post-verdict',  iA:3000, iM:0   },
+  {num:9, src:'usa',    label:'Fed baisse taux',           iA:-1000,iM:-1000},
+  {num:10,src:'usa',    label:'GPU chinois interdits',     iA:2500, iM:2500},
+  {num:11,src:'usa',    label:'Subvention CHIPS Act',      iA:-5000,iM:3000},
+  {num:12,src:'usa',    label:'Sanctions batteries Tesla', iA:0,    iM:1500},
+];
+
+const SRC_COL={conflit:'#5f6c84',chine:'#e24b4a',usa:'#1D9E75'};
+const SRC_LAB={conflit:'⚔️ Conflit',chine:'🇨🇳 Chine',usa:'🦅 USA'};
+
+const fmt=v=>Math.abs(v)>=1000?(v/1000).toFixed(1)+' Md$':v+' M$';
+const bdg=s=>`<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${SRC_COL[s]}22;color:${SRC_COL[s]};border:.5px solid ${SRC_COL[s]}44">${SRC_LAB[s]}</span>`;
+const omTot=a=>Object.values(OMEGA_R[a]).reduce((x,y)=>x+y,0);
+
+function genererRapport(){
+  let cA=0,cM=0;
+  const rows=ETAPES.map(e=>{
+    cA+=e.iA;cM+=e.iM;
+    const colA=e.iA<0?'#1D9E75':e.iA>0?'#e24b4a':'#5f6c84';
+    const colM=e.iM<0?'#1D9E75':e.iM>0?'#e24b4a':'#5f6c84';
+    return `<tr style="border-bottom:.5px solid rgba(255,255,255,.03)">
+      <td style="padding:7px 8px;color:#5f6c84;font-size:11px">${e.num}</td>
+      <td style="padding:7px 8px">${bdg(e.src)}</td>
+      <td style="padding:7px 8px;font-size:11px">${e.label}</td>
+      <td style="padding:7px 8px;text-align:right;color:${colA};font-size:11px;font-variant-numeric:tabular-nums">${e.iA!==0?(e.iA>0?'+':'')+fmt(e.iA):'—'}</td>
+      <td style="padding:7px 8px;text-align:right;color:${colM};font-size:11px;font-variant-numeric:tabular-nums">${e.iM!==0?(e.iM>0?'+':'')+fmt(e.iM):'—'}</td>
+      <td style="padding:7px 8px;text-align:right;color:#5f6c84;font-size:11px;font-variant-numeric:tabular-nums">${fmt(cA)}</td>
+      <td style="padding:7px 8px;text-align:right;color:#5f6c84;font-size:11px;font-variant-numeric:tabular-nums">${fmt(cM)}</td>
+    </tr>`;
+  });
+  const tA=cA,tM=cM;
+  const diff=tM-tA;
+  const vd=diff>5000
+    ?{g:'Altman / OpenAI',f:'🇺🇸',c:'#3dd6f5',e:diff,txt:'Altman sort avantagé — soutien CHIPS Act et moindre dépendance chinoise. Musk subit sanctions batteries + perte contrat fédéral.'}
+    :diff<-5000
+    ?{g:'Musk / xAI+Tesla',f:'🚀',c:'#c8a96e',e:Math.abs(diff),txt:'Musk résiste via intégration verticale (Terafab, SpaceX). Altman reste dépendant de Microsoft et des fondeurs asiatiques.'}
+    :{g:'Indéterminé',f:'⚖️',c:'#E09F27',e:Math.abs(diff),txt:'Les deux camps s\'affaiblissent mutuellement. Le vrai bénéficiaire est la Chine — arbitre silencieux du conflit.'};
+
+  const omA=omTot('altman'),omM=omTot('musk');
+  const DIMS=['momentum','volatilite','geopolitique','juridique','macro'];
+  const DLABS=['Momentum','Volatilité','Géopolitique','Juridique','Macro'];
+  const omRows=DIMS.map((d,i)=>{
+    const vA=OMEGA_R.altman[d],vM=OMEGA_R.musk[d];
+    return `<tr>
+      <td style="padding:6px 8px;color:#5f6c84;font-size:11px">${DLABS[i]}</td>
+      <td style="padding:6px 8px"><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:4px;background:#151c35;border-radius:2px"><div style="width:${vA/40*100}%;height:100%;background:#3dd6f5;border-radius:2px"></div></div><span style="color:#3dd6f5;font-size:11px">${vA}</span></div></td>
+      <td style="padding:6px 8px"><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:4px;background:#151c35;border-radius:2px"><div style="width:${vM/40*100}%;height:100%;background:#c8a96e;border-radius:2px"></div></div><span style="color:#c8a96e;font-size:11px">${vM}</span></div></td>
+    </tr>`;
+  }).join('');
+
+  const ts=new Date().toLocaleString('fr-FR');
+  const rc=document.getElementById('rapport-container');
+  rc.style.display='block';
+  rc.innerHTML=`
+  <div style="background:#0a0e1c;border:.5px solid rgba(200,169,110,.25);border-radius:12px;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e8e4de">
+    <div style="display:flex;justify-content:space-between;border-bottom:.5px solid rgba(200,169,110,.15);margin-bottom:20px;padding-bottom:12px">
+      <div>
+        <div style="font-size:11px;color:#c8a96e;letter-spacing:.1em">RAPPORT JLTI · SIMULATION GÉOPOLITIQUE</div>
+        <div style="font-size:18px;font-weight:500;margin-top:4px">Musk vs Altman — Analyse éliminatoire</div>
+        <div style="font-size:11px;color:#5f6c84;margin-top:3px">${ts} · Données simulées</div>
+      </div>
+      <div style="font-size:22px">${vd.f}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+      <div style="background:#0f1428;border:.5px solid #3dd6f533;border-radius:8px;padding:12px">
+        <div style="font-size:10px;color:#5f6c84;margin-bottom:4px">ALTMAN / OPENAI</div>
+        <div style="font-size:22px;font-weight:500;color:#3dd6f5">${fmt(tA)}</div>
+        <div style="font-size:11px;color:#5f6c84;margin-top:4px">Omega ${omA} / 200</div>
+      </div>
+      <div style="background:#0f1428;border:.5px solid #c8a96e33;border-radius:8px;padding:12px">
+        <div style="font-size:10px;color:#5f6c84;margin-bottom:4px">MUSK / XAI + TESLA</div>
+        <div style="font-size:22px;font-weight:500;color:#c8a96e">${fmt(tM)}</div>
+        <div style="font-size:11px;color:#5f6c84;margin-top:4px">Omega ${omM} / 200</div>
+      </div>
+      <div style="background:#0f1428;border:.5px solid ${vd.c}44;border-radius:8px;padding:12px">
+        <div style="font-size:10px;color:#5f6c84;margin-bottom:4px">VERDICT JLTI</div>
+        <div style="font-size:15px;font-weight:500;color:${vd.c}">${vd.g}</div>
+        <div style="font-size:11px;color:#5f6c84;margin-top:4px">Écart : ${fmt(vd.e)}</div>
+      </div>
+    </div>
+    <div style="background:#0f1428;border-left:2px solid ${vd.c};border-radius:6px;padding:12px 14px;margin-bottom:20px;font-size:12px;line-height:1.7;color:#a8a29d">
+      ${vd.txt}
+      <div style="margin-top:8px;font-size:10px;color:#5f6c84">⚠️ Simulation macro — données non auditées.</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#5f6c84;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Omega — 5 dimensions</div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="font-size:10px;color:#5f6c84;font-weight:400;text-align:left;padding:4px 8px;border-bottom:.5px solid rgba(255,255,255,.06)">Dimension</th>
+          <th style="font-size:10px;color:#3dd6f5;font-weight:400;padding:4px 8px;border-bottom:.5px solid rgba(255,255,255,.06)">Altman / 40</th>
+          <th style="font-size:10px;color:#c8a96e;font-weight:400;padding:4px 8px;border-bottom:.5px solid rgba(255,255,255,.06)">Musk / 40</th>
+        </tr></thead>
+        <tbody>${omRows}</tbody>
+        <tfoot><tr style="border-top:.5px solid rgba(255,255,255,.06)">
+          <td style="padding:8px;font-size:11px;font-weight:500">TOTAL</td>
+          <td style="padding:8px;font-size:13px;font-weight:500;color:#3dd6f5">${omA} / 200</td>
+          <td style="padding:8px;font-size:13px;font-weight:500;color:#c8a96e">${omM} / 200</td>
+        </tr></tfoot>
+      </table>
+    </div>
+    <div>
+      <div style="font-size:11px;color:#5f6c84;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Étapes éliminatoires — ${ETAPES.length} phases</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:580px">
+          <thead><tr style="border-bottom:.5px solid rgba(255,255,255,.06)">
+            <th style="font-size:10px;color:#5f6c84;font-weight:400;text-align:left;padding:4px 8px">#</th>
+            <th style="font-size:10px;color:#5f6c84;font-weight:400;text-align:left;padding:4px 8px">Source</th>
+            <th style="font-size:10px;color:#5f6c84;font-weight:400;text-align:left;padding:4px 8px">Événement</th>
+            <th style="font-size:10px;color:#3dd6f5;font-weight:400;text-align:right;padding:4px 8px">Altman</th>
+            <th style="font-size:10px;color:#c8a96e;font-weight:400;text-align:right;padding:4px 8px">Musk</th>
+            <th style="font-size:10px;color:#3dd6f5;font-weight:400;text-align:right;padding:4px 8px">Cumul A.</th>
+            <th style="font-size:10px;color:#c8a96e;font-weight:400;text-align:right;padding:4px 8px">Cumul M.</th>
+          </tr></thead>
+          <tbody>${rows.join('')}</tbody>
+        </table>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-size:10px;color:#5f6c84;border-top:.5px solid rgba(255,255,255,.05);padding-top:10px;display:flex;justify-content:space-between">
+      <span>JLTI · Polaris-Mythos-OS-314 © RAJAB Rachid</span>
+      <span>Simulation — données non auditées</span>
+    </div>
+  </div>`;
+
+  document.getElementById('btn-rapport').textContent='🔄 RÉGÉNÉRER RAPPORT';
+  rc.scrollIntoView({behavior:'smooth'});
+}
+
+document.getElementById('btn-rapport').addEventListener('click',genererRapport);
+</script>
+</body>
+</html>

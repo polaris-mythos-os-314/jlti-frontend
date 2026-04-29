@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexique JLTI</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0e1c;--s1:#0f1428;--s2:#151c35;--border:rgba(200,169,110,0.15);--gold:#c8a96e;--cyan:#3dd6f5;--green:#1D9E75;--red:#e24b4a;--muted:#5f6c84;--text:#e8e4de}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;padding:1.25rem;min-height:100vh}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:.5px solid var(--border)}
+  .logo{font-size:12px;letter-spacing:.12em;color:var(--gold);font-weight:500}
+  .count{font-size:11px;color:var(--muted)}
+
+  .search-wrap{position:relative;margin-bottom:1.25rem}
+  .search-wrap input{width:100%;background:var(--s1);border:.5px solid var(--border);border-radius:8px;padding:10px 14px 10px 36px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
+  .search-wrap input:focus{border-color:var(--gold)}
+  .search-wrap input::placeholder{color:var(--muted)}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem}
+  .filter-btn{background:var(--s1);border:.5px solid var(--border);border-radius:6px;padding:5px 12px;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;letter-spacing:.04em}
+  .filter-btn:hover,.filter-btn.active{border-color:var(--gold);color:var(--gold)}
+  .filter-btn.active{background:rgba(200,169,110,.08)}
+
+  .lexique-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+
+  .lex-card{background:var(--s1);border:.5px solid var(--border);border-radius:10px;padding:14px;transition:border-color .2s;cursor:default}
+  .lex-card:hover{border-color:rgba(200,169,110,.35)}
+
+  .lex-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+  .lex-term{font-size:14px;font-weight:500;color:var(--text);line-height:1.3}
+  .lex-tag{font-size:10px;padding:2px 8px;border-radius:4px;flex-shrink:0;margin-left:8px;white-space:nowrap}
+  .tag-omega{background:rgba(61,214,245,.12);color:var(--cyan);border:.5px solid rgba(61,214,245,.2)}
+  .tag-geo{background:rgba(226,75,74,.12);color:var(--red);border:.5px solid rgba(226,75,74,.2)}
+  .tag-finance{background:rgba(200,169,110,.12);color:var(--gold);border:.5px solid rgba(200,169,110,.2)}
+  .tag-strategie{background:rgba(29,158,117,.12);color:var(--green);border:.5px solid rgba(29,158,117,.2)}
+  .tag-juridique{background:rgba(224,159,39,.12);color:#E09F27;border:.5px solid rgba(224,159,39,.2)}
+  .tag-macro{background:rgba(95,108,132,.15);color:#8a9ab5;border:.5px solid rgba(95,108,132,.2)}
+
+  .lex-def{font-size:12px;color:#a8a29d;line-height:1.6;margin-bottom:8px}
+  .lex-example{font-size:11px;color:var(--muted);border-left:2px solid var(--border);padding-left:8px;line-height:1.5;font-style:italic}
+
+  .no-result{text-align:center;color:var(--muted);padding:2rem;font-size:12px;grid-column:1/-1}
+
+  .footer{margin-top:1.5rem;font-size:10px;color:var(--muted);border-top:.5px solid var(--border);padding-top:10px;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">JLTI · LEXIQUE</span>
+  <span class="count" id="count">— termes</span>
+</header>
+
+<div class="search-wrap">
+  <span class="search-icon">🔍</span>
+  <input type="text" id="search" placeholder="Rechercher un terme...">
+</div>
+
+<div class="filters" id="filters">
+  <button class="filter-btn active" data-cat="all">Tous</button>
+  <button class="filter-btn" data-cat="omega">Omega</button>
+  <button class="filter-btn" data-cat="geo">Géopolitique</button>
+  <button class="filter-btn" data-cat="finance">Finance</button>
+  <button class="filter-btn" data-cat="strategie">Stratégie</button>
+  <button class="filter-btn" data-cat="juridique">Juridique</button>
+  <button class="filter-btn" data-cat="macro">Macro</button>
+</div>
+
+<div class="lexique-grid" id="grid"></div>
+
+<div class="footer">
+  <span>JLTI · Polaris-Mythos-OS-314 © RAJAB Rachid</span>
+  <span>Lexique de lecture — usage interne</span>
+</div>
+
+<script>
+const LEXIQUE = [
+  // OMEGA
+  {term:'Omega Score',cat:'omega',tag:'tag-omega',
+   def:'Indicateur synthétique JLTI sur 200 points, calculé sur 5 dimensions (Momentum, Volatilité, Géopolitique, Juridique, Macro). Mesure l\'état de tension d\'un système géopolitico-financier à un instant donné.',
+   ex:'Un Omega Score > 150 signale une pression dominante des flux dollar.'},
+  {term:'Dimension Momentum',cat:'omega',tag:'tag-omega',
+   def:'Axe mesurant la dynamique de financement et d\'attraction capitalistique d\'un acteur. Évalue la vitesse d\'accumulation de ressources sur 40 points.',
+   ex:'OpenAI affiche 38/40 grâce au soutien Microsoft.'},
+  {term:'Dimension Volatilité',cat:'omega',tag:'tag-omega',
+   def:'Axe mesurant l\'exposition aux risques projets, techniques et opérationnels. Une volatilité élevée traduit une dépendance à des variables non maîtrisées.',
+   ex:'xAI/Tesla : 32/40 en raison du multi-projets simultanés.'},
+  {term:'Dimension Géopolitique',cat:'omega',tag:'tag-omega',
+   def:'Axe mesurant le positionnement régulateur et diplomatique d\'un acteur. Intègre les relations avec les gouvernements, blocs et instances internationales.',
+   ex:'Musk clivant politiquement : 22/40 vs 28/40 pour Altman.'},
+  {term:'Dimension Juridique',cat:'omega',tag:'tag-omega',
+   def:'Axe évaluant l\'exposition aux contentieux, poursuites, et risques de compliance. Un score faible indique une fragilité légale structurelle.',
+   ex:'Musk : 15/40 — contentieux multiples actifs.'},
+  {term:'Dimension Macro',cat:'omega',tag:'tag-omega',
+   def:'Axe mesurant l\'accès au capital, la solidité bilancielle et la résistance aux chocs macroéconomiques (inflation, taux, change).',
+   ex:'Altman : 35/40 grâce à la diversification des sources de financement.'},
+  {term:'Temporal Decay',cat:'omega',tag:'tag-omega',
+   def:'Coefficient de décroissance appliqué aux scores Omega dans le temps. Traduit l\'idée que la pertinence d\'un signal géopolitique diminue si l\'événement ne se concrétise pas.',
+   ex:'Un embargo annoncé sans exécution voit son score Omega baisser à chaque cycle.'},
+  {term:'Convergence Bonus',cat:'omega',tag:'tag-omega',
+   def:'Prime ajoutée à l\'Omega Score lorsque plusieurs dimensions convergent simultanément vers un même signal. Amplifie la valeur prédictive.',
+   ex:'Pétrole >85$ + tensions Moyen-Orient + baisse dollar = convergence 3 axes.'},
+
+  // GÉOPOLITIQUE
+  {term:'Effet Papillon géopolitique',cat:'geo',tag:'tag-geo',
+   def:'Principe selon lequel une décision locale (ex : restriction d\'export d\'un minerai) peut provoquer des perturbations en cascade sur les chaînes d\'approvisionnement mondiales.',
+   ex:'L\'interdiction d\'export de gallium par la Chine impacte la fabrication de GPU aux USA.'},
+  {term:'Acteur tiers',cat:'geo',tag:'tag-geo',
+   def:'Puissance qui profite d\'un conflit entre deux parties sans y participer directement. Capte les ressources, les marchés ou les talents pendant que les adversaires s\'épuisent.',
+   ex:'La Chine comme acteur tiers dans le conflit Musk/Altman.'},
+  {term:'Vide géopolitique',cat:'geo',tag:'tag-geo',
+   def:'Zone d\'influence ou segment de marché laissé vacant par un acteur affaibli ou en conflit. Attire mécaniquement un substitut.',
+   ex:'"La nature géopolitique n\'aime pas le vide" — principe fondateur JLTI.'},
+  {term:'Bloc sino-russe-golfe',cat:'geo',tag:'tag-geo',
+   def:'Alliance informelle entre la Chine, la Russie et les monarchies du Golfe, fondée sur des intérêts mutuels en matière d\'énergie, de devises alternatives et de technologies souveraines.',
+   ex:'Accord BRICS+ swap Yuan/Dirham hors SWIFT.'},
+  {term:'Zone d\'exclusion technologique',cat:'geo',tag:'tag-geo',
+   def:'Périmètre dans lequel un État interdit l\'accès à certaines technologies étrangères pour protéger ses champions nationaux ou exercer une pression diplomatique.',
+   ex:'Interdiction GPU chinois pour les entreprises américaines après menace TSMC.'},
+  {term:'Index de tension',cat:'geo',tag:'tag-geo',
+   def:'Score de 0 à 99 mesurant le niveau de friction géopolitique dans une région. Au-dessus de 70 : zone rouge. Entre 50 et 70 : surveillance active.',
+   ex:'Moyen-Orient : 78 — zone rouge persistante.'},
+
+  // FINANCE
+  {term:'Matières premières stratégiques',cat:'finance',tag:'tag-finance',
+   def:'Ressources physiques dont le contrôle confère un avantage systémique dans les secteurs technologiques et énergétiques. Or, pétrole, lithium, gallium, germanium, terres rares.',
+   ex:'La Chine contrôle 85% du raffinage mondial des terres rares.'},
+  {term:'Coût d\'opportunité',cat:'finance',tag:'tag-finance',
+   def:'Gain auquel un acteur renonce en choisissant une option plutôt qu\'une autre. Dans la simulation JLTI, il traduit les avantages compétitifs sacrifiés par un conflit.',
+   ex:'OpenAI : 200M$ de coût d\'opportunité lié à la pression d\'ouverture du code source.'},
+  {term:'Perte de valorisation',cat:'finance',tag:'tag-finance',
+   def:'Réduction de la capitalisation boursière ou de la valeur estimée d\'une entreprise, provoquée par un choc externe (concurrent, procès, sanction).',
+   ex:'Annonce ChatGLM 5 → perte de 5 Md$ de valorisation pour OpenAI et xAI.'},
+  {term:'Choc inflationniste importé',cat:'finance',tag:'tag-finance',
+   def:'Hausse des prix domestiques provoquée par la dépréciation de la monnaie nationale face au dollar, renchérissant les importations (énergie, matières premières).',
+   ex:'Euro faible → facture énergétique européenne en hausse malgré un pétrole stable en dollars.'},
+  {term:'Surcoût de diversification',cat:'finance',tag:'tag-finance',
+   def:'Coût additionnel supporté par une entreprise contrainte de changer de fournisseur ou de chaîne d\'approvisionnement pour des raisons géopolitiques.',
+   ex:'Tesla contraint de remplacer CATL → +1,5 Md$ de surcoût de diversification.'},
+  {term:'Rente pétrolière',cat:'finance',tag:'tag-finance',
+   def:'Revenu exceptionnel généré par la vente de pétrole à des prix supérieurs au coût de production. Principal levier de puissance des États producteurs.',
+   ex:'Pétrole >85$/b : l\'OPEP+ devient le principal acteur qui tire les ficelles.'},
+
+  // STRATÉGIE
+  {term:'Légitimité d\'origine',cat:'strategie',tag:'tag-strategie',
+   def:'Autorité fondée sur le rôle de fondateur ou d\'initiateur d\'un projet. Puissante symboliquement mais fragile si elle n\'est pas couplée à l\'exercice réel du pouvoir.',
+   ex:'Musk, cofondateur d\'OpenAI, revendique la légitimité d\'origine face à Altman.'},
+  {term:'Légitimité d\'exercice',cat:'strategie',tag:'tag-strategie',
+   def:'Autorité fondée sur l\'action concrète : construction de la valeur, direction opérationnelle, résultats mesurables. Plus robuste à moyen terme.',
+   ex:'Altman détient la légitimité d\'exercice — il a construit GPT-4, levé les financements, signé les partenariats.'},
+  {term:'Stratégie de la terre brûlée',cat:'strategie',tag:'tag-strategie',
+   def:'Tactique consistant à détruire des ressources ou actifs avant qu\'un adversaire ne puisse les utiliser. Dans le contexte IA : débauchages, procès, publication d\'informations sensibles.',
+   ex:'Recrutements massifs de talents OpenAI par xAI = tactique de terre brûlée RH.'},
+  {term:'Intégration verticale',cat:'strategie',tag:'tag-strategie',
+   def:'Stratégie consistant à contrôler plusieurs maillons d\'une chaîne de valeur (de la matière première au produit fini). Réduit la dépendance aux fournisseurs externes.',
+   ex:'Musk : Tesla (batteries) + SpaceX (calcul orbital) + xAI (modèles) = intégration verticale IA.'},
+  {term:'État Markov stratégique',cat:'strategie',tag:'tag-strategie',
+   def:'Dans le moteur Polaris/Duality Engine, modélisation de l\'état d\'un acteur (Ascension, Apogée, Déclin, Crise) avec des probabilités de transition entre états.',
+   ex:'Musk en état DÉCLIN tente de basculer en CRISE pour forcer une ASCENSION via le procès.'},
+  {term:'Étape éliminatoire',cat:'strategie',tag:'tag-strategie',
+   def:'Phase d\'analyse JLTI représentant un événement ou une décision qui modifie les positions relatives des acteurs. La simulation progresse étape par étape jusqu\'au verdict.',
+   ex:'12 étapes éliminatoires dans la simulation Musk vs Altman.'},
+
+  // JURIDIQUE
+  {term:'Rupture de contrat initial',cat:'juridique',tag:'tag-juridique',
+   def:'Argument juridique central dans le procès Musk/OpenAI : Musk soutient que la transformation d\'OpenAI de non-profit en entité commerciale viole les engagements fondateurs.',
+   ex:'Musk réclame ~150 Md$ à restituer à un trust caritatif.'},
+  {term:'Taxe d\'exportation représailles',cat:'juridique',tag:'tag-juridique',
+   def:'Mesure unilatérale imposée par un État pour pénaliser une entité étrangère après un événement perçu comme hostile. Instrument de guerre économique non-militaire.',
+   ex:'Chine : taxe export sur les puces vers l\'entreprise déclarée vainqueur du procès Musk/Altman.'},
+  {term:'Subvention stratégique',cat:'juridique',tag:'tag-juridique',
+   def:'Aide publique orientée vers un secteur ou un acteur jugé stratégique. Peut constituer une distorsion de concurrence dans le droit OMC.',
+   ex:'CHIPS Act : 5 Md$ à OpenAI pour construire des usines de GPU sur sol américain.'},
+  {term:'Article L.571-3',cat:'juridique',tag:'tag-juridique',
+   def:'Disposition du Code monétaire et financier français encadrant la prestation de services d\'investissement sans autorisation PSI. Risque pénal jusqu\'à 3 ans + 375 000€ d\'amende.',
+   ex:'La diffusion de signaux JLTI ciblant des clients institutionnels peut relever de cet article.'},
+
+  // MACRO
+  {term:'SMPT',cat:'macro',tag:'tag-macro',
+   def:'Salaire Moyen par Tête. Calculé par la Dares, il mesure l\'ensemble des salaires bruts annuels moyens (primes comprises) des salariés du privé. Utilisé pour les analyses macroéconomiques.',
+   ex:'Indicateur de dynamique de la masse salariale — distinct du salaire médian.'},
+  {term:'Salaire médian',cat:'macro',tag:'tag-macro',
+   def:'Seuil de salaire net mensuel séparant la population en deux parties égales : 50% gagnent moins, 50% gagnent plus. Référence INSEE. 2 190€ nets/mois en 2024.',
+   ex:'Plus représentatif de la situation des ménages standard que le salaire moyen.'},
+  {term:'Parité de Pouvoir d\'Achat (PPA)',cat:'macro',tag:'tag-macro',
+   def:'Méthode de comparaison économique qui ajuste les revenus en fonction du coût réel de la vie local. 1€ à Céret ≠ 1€ à Paris en termes de pouvoir d\'achat réel.',
+   ex:'Un smicard à Céret a plus de pouvoir d\'achat réel qu\'un smicard à Paris.'},
+  {term:'Effet de second tour',cat:'macro',tag:'tag-macro',
+   def:'Propagation d\'un choc initial (ex : hausse du pétrole) vers d\'autres secteurs économiques via les prix, les salaires ou les anticipations. Amplifie l\'inflation.',
+   ex:'Hausse du carburant → hausse des coûts transport → hausse des prix alimentaires.'},
+  {term:'Indice des prix à la consommation (IPC)',cat:'macro',tag:'tag-macro',
+   def:'Indicateur mesurant l\'évolution des prix d\'un panier de biens et services représentatif de la consommation des ménages. Base du mécanisme de revalorisation du SMIC.',
+   ex:'IPC EU : 2.1% en 2024 — légèrement au-dessus de la cible BCE de 2%.'},
+  {term:'Pipeline causal JLTI',cat:'macro',tag:'tag-macro',
+   def:'Chaîne d\'interdépendances modélisée dans la matrice JLTI : Matières premières → Devise → Énergie → Décisions politiques → Conflits → Verdict (qui tire les ficelles).',
+   ex:'Le pipeline identifie le maillon dominant à chaque instant selon les données disponibles.'},
+];
+
+// ── Rendu ──────────────────────────────────────────────────────────────────
+let currentCat = 'all';
+let currentSearch = '';
+
+function render() {
+  const grid = document.getElementById('grid');
+  const filtered = LEXIQUE.filter(e => {
+    const matchCat = currentCat === 'all' || e.cat === currentCat;
+    const q = currentSearch.toLowerCase();
+    const matchSearch = !q || e.term.toLowerCase().includes(q) || e.def.toLowerCase().includes(q);
+    return matchCat && matchSearch;
+  });
+
+  document.getElementById('count').textContent = filtered.length + ' terme' + (filtered.length > 1 ? 's' : '');
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="no-result">Aucun terme trouvé.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(e => `
+    <div class="lex-card">
+      <div class="lex-top">
+        <div class="lex-term">${e.term}</div>
+        <span class="lex-tag ${e.tag}">${catLabel(e.cat)}</span>
+      </div>
+      <div class="lex-def">${e.def}</div>
+      <div class="lex-example">${e.ex}</div>
+    </div>
+  `).join('');
+}
+
+function catLabel(c) {
+  return {omega:'Omega',geo:'Géopolitique',finance:'Finance',strategie:'Stratégie',juridique:'Juridique',macro:'Macro'}[c]||c;
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  currentSearch = e.target.value;
+  render();
+});
+
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
